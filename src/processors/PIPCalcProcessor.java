@@ -10,14 +10,14 @@ import java.util.Observable;
  */
 public abstract class PIPCalcProcessor extends Observable{
 
-    protected PIPCalcNode tree;
+    PIPCalcNode tree;
 
     /**
      * determines if a string is numeric
      * @param s the string to determine if it is numeric
      * @return true if it is numeric, false otherwise
      */
-    public static Boolean isNumeric( String s ){
+    private static Boolean isNumeric( String s ){
         return s.matches( "[-+]?\\d+" );
     }
 
@@ -34,7 +34,7 @@ public abstract class PIPCalcProcessor extends Observable{
      * @param s the string used to determine the type of PIPCalcNode to return
      * @return the PIPCalcNode represented by the string
      */
-    protected PIPCalcNode createPIPCalcNode(String s){
+    PIPCalcNode createPIPCalcNode(String s){
         if(isNumeric(s)){
             return new ConstantNode(Integer.parseInt(s));
         }
@@ -86,6 +86,10 @@ public abstract class PIPCalcProcessor extends Observable{
      */
     public abstract void constructTree( ArrayList<String> tokens );
 
+    /**
+     * Displays tree, notifies observers that underlying tree changed
+     * @param mode String representing the processor
+     */
     public void displayTree(String mode){
         String result = "";
         switch(mode){
@@ -102,6 +106,4 @@ public abstract class PIPCalcProcessor extends Observable{
         this.setChanged();
         this.notifyObservers(result);
     }
-
-
 }

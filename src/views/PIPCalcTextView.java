@@ -11,20 +11,21 @@ import java.util.Observer;
 import java.util.Scanner;
 
 /**
+ * Created by King David Lawrence on 01/20/2018.
  * A class representing the text based UI for PIPCalc
  *
  * This has very basic functionality
  */
 public class PIPCalcTextView implements Observer{
 
-    public static final String PROMPT = "PIPCalc > ";
+    private static final String PROMPT = "PIPCalc > ";
     private PIPCalcController controller;
 
     /**
      * Constructor
      * Defaults to a Infix model
      */
-    public PIPCalcTextView(){
+    private PIPCalcTextView(){
         PIPCalcProcessor processor = new PIPCalcInfixProcessor();
         processor.addObserver(this);
         this.controller = new PIPCalcController(processor);
@@ -33,7 +34,7 @@ public class PIPCalcTextView implements Observer{
     /**
      * Repeatedly asks for a command to process
      */
-    public void mainLoop(){
+    private void mainLoop(){
         Scanner in = new Scanner(System.in);
         String line;
 
@@ -42,18 +43,17 @@ public class PIPCalcTextView implements Observer{
         while(in.hasNextLine()){
             line = in.nextLine();
 
-            if(line.equals("Quit")){
-                break;
+            switch (line) {
+                case "Quit":
+                    break;
+                case "ChangeModel":
+                    System.out.print("Enter model type: ");
+                    line = in.nextLine();
+                    this.controller.changeModel(getTypeFromString(line));
+                    break;
+                default:
+                    this.controller.process(line);
             }
-            else if(line.equals("ChangeModel")){
-                System.out.print("Enter model type: ");
-                line = in.nextLine();
-                this.controller.changeModel(getTypeFromString(line));
-            }
-            else{
-                this.controller.process(line);
-            }
-
             System.out.print(PROMPT);
         }
     }
@@ -63,16 +63,18 @@ public class PIPCalcTextView implements Observer{
      * @param type the type of model requested
      * @return the model represented by the provided type
      */
-    public PIPCalcProcessor getTypeFromString(String type){
+    private PIPCalcProcessor getTypeFromString(String type){
         PIPCalcProcessor processor;
-        if(type.equals("infix")){
-            processor = new PIPCalcInfixProcessor();
-        }
-        else if(type.equals("prefix")){
-            processor = new PIPCalcPrefixProcessor();
-        }
-        else{
-            processor = new PIPCalcPostfixProcessor();
+        switch (type) {
+            case "infix":
+                processor = new PIPCalcInfixProcessor();
+                break;
+            case "prefix":
+                processor = new PIPCalcPrefixProcessor();
+                break;
+            default:
+                processor = new PIPCalcPostfixProcessor();
+                break;
         }
 
         processor.addObserver(this);
@@ -91,7 +93,7 @@ public class PIPCalcTextView implements Observer{
 
     /**
      * Main function to start the text based UI.
-     * @param args
+     * @param args not used
      */
     public static void main(String[] args) {
         PIPCalcTextView view = new PIPCalcTextView();

@@ -7,7 +7,7 @@ import java.util.Stack;
 import java.util.Queue;
 
 /**
- * Created by King David Lawrence on 11/30/2017.
+ * Created by King David Lawrence on 01/20/2018.
  * Class to process PIPCalc expressions using infix notation
  */
 public class PIPCalcInfixProcessor extends PIPCalcProcessor {
@@ -54,20 +54,22 @@ public class PIPCalcInfixProcessor extends PIPCalcProcessor {
         Stack<PIPCalcNode> new_stack = new Stack<>();
         while (!output_queue.isEmpty()) {
             PIPCalcNode n1 = output_queue.remove();
-            if (n1.getNodeType() == PIPCalcNode.NodeType.Constant) {
-                ConstantNode c = (ConstantNode) n1;
-                new_stack.push(c);
-            }
-            if (n1.getNodeType() == PIPCalcNode.NodeType.BinaryOperation) {
-                BinaryOperatorNode bin = (BinaryOperatorNode) n1;
-                bin.setRightChild(new_stack.pop());
-                bin.setLeftChild(new_stack.pop());
-                new_stack.push(bin);
-            }
-            if (n1.getNodeType() == PIPCalcNode.NodeType.UnaryOperation) {
-                UnaryOperatorNode u = (UnaryOperatorNode) n1;
-                u.setChild(new_stack.pop());
-                new_stack.push(u);
+            switch (n1.getNodeType()) {
+                case Constant:
+                    ConstantNode c = (ConstantNode) n1;
+                    new_stack.push(c);
+                    break;
+                case UnaryOperation:
+                    UnaryOperatorNode u = (UnaryOperatorNode) n1;
+                    u.setChild(new_stack.pop());
+                    new_stack.push(u);
+                    break;
+                case BinaryOperation:
+                    BinaryOperatorNode bin = (BinaryOperatorNode) n1;
+                    bin.setRightChild(new_stack.pop());
+                    bin.setLeftChild(new_stack.pop());
+                    new_stack.push(bin);
+                    break;
             }
         }
         tree = new_stack.peek(); 

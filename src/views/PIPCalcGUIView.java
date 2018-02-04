@@ -4,8 +4,6 @@ import controllers.PIPCalcController;
 import processors.*;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,15 +16,20 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
- * Created by kdl4u_000 on 11/30/2017.
+ * Created by King David Lawrence on 01/20/2018.
+ * The GUI for the calculator
  */
-public class PIPCalcGUIView extends Application implements Observer{
+public class PIPCalcGUIView extends Application implements Observer {
     //the controller for the GUI
     private PIPCalcController controller;
     //the 3 different processors
     private PIPCalcInfixProcessor processor1;
     private PIPCalcPrefixProcessor processor2;
     private PIPCalcPostfixProcessor processor3;
+    //boolean determines if some calculation was done just previously
+    private boolean justSolved = false;
+    //stores the most recent answer
+    private int lastAnswer = 0;
 
     //calculator's display
     private TextField display;
@@ -56,13 +59,13 @@ public class PIPCalcGUIView extends Application implements Observer{
         final ToggleGroup toggleGroup = new ToggleGroup();
 
         RadioButton[] calcModeButtons = new RadioButton[3];
-        Button[] regularButtons = new Button[28];
+        Button[] regularButtons = new Button[30];
         Button[] convertDisplayButtons = new Button[3];
 
         String[] names1 = {"infix", "prefix", "postfix"};
         String[] names2 = {"1", "2", "3",  "+", "4", "5", "6", "-", "7", "8", "9",
-                "*", "Enter", "0", "Clear", "//", "<", "<=", "!=", "^", "==", ">",
-                ">=", "(-)", "@", "|", "(", ")"};
+                "*", "ANS", "0", "DEL", "//", "<", "<=", "!=", "^", ">", ">=", "==",
+                "(-)", "@", "|", "(", ")", "ENTER", "CLEAR", };
         String[] names3 = {"toInfix", "toPrefix", "toPostfix"};
 
         for (int i = 0; i < calcModeButtons.length; i++) {
@@ -72,29 +75,24 @@ public class PIPCalcGUIView extends Application implements Observer{
             if (i == 0) calcModeButtons[i].setSelected(true); // default "infix"
         }
 
-        toggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
-            public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
-                String name = new_toggle.getToggleGroup().getSelectedToggle().getUserData().toString();
-                System.out.println(name);
-                if (new_toggle != null) {
-                    switch (name) {
-                        case "infix":
-                            controller.changeModel(processor1);
-                            break;
-                        case "prefix":
-                            controller.changeModel(processor2);
-                            break;
-                        case "postfix":
-                            controller.changeModel(processor3);
-                            break;
-                    }
-                }
+        toggleGroup.selectedToggleProperty().addListener((ov, old_toggle, new_toggle) -> {
+            String name = new_toggle.getToggleGroup().getSelectedToggle().getUserData().toString();
+            switch (name) {
+                case "infix":
+                    controller.changeModel(processor1);
+                    break;
+                case "prefix":
+                    controller.changeModel(processor2);
+                    break;
+                case "postfix":
+                    controller.changeModel(processor3);
+                    break;
             }
         });
 
         for (int i = 0; i < regularButtons.length; i++) {
             regularButtons[i] = new Button(names2[i]);
-            regularButtons[i].setOnAction(e -> handleButtonAction(e));
+            regularButtons[i].setOnAction(this::handleButtonAction);
         }
 
         for (int i = 0; i < convertDisplayButtons.length; i++) {
@@ -104,11 +102,11 @@ public class PIPCalcGUIView extends Application implements Observer{
 
         BorderPane b = new BorderPane();
 
-        VBox v1 = new VBox(calcModeButtons[0], calcModeButtons[1], calcModeButtons[2],
-                convertDisplayButtons[0], convertDisplayButtons[1], convertDisplayButtons[2]);
+        VBox v1 = new VBox(new Label("Mode:"), calcModeButtons[0], calcModeButtons[1], calcModeButtons[2],
+                new Label("Convert:"), convertDisplayButtons[0], convertDisplayButtons[1], convertDisplayButtons[2]);
         b.setTop(display); b.setLeft(makeGrid(regularButtons)); b.setRight(v1);
         primaryStage.setTitle("PIPCalc");
-        primaryStage.setScene(new Scene(b, 300, 250));
+        primaryStage.setScene(new Scene(b, 300, 300));
         primaryStage.setResizable(false);
         primaryStage.show();
     }
@@ -118,12 +116,12 @@ public class PIPCalcGUIView extends Application implements Observer{
      * calc grid
      * @return grid pane
      */
-    public GridPane makeGrid(Button[] gridButtons){
+    private GridPane makeGrid(Button[] gridButtons){
         GridPane root = new GridPane();
         root.setAlignment(Pos.CENTER);
         int index ; boolean done = false;
         for (int row = 0; row < 8 && !done; row++) {
-            for (int col = 0; col < 4 && !done; col++) {
+            for (int col = 0; col < 4; col++) {
                 index = 4 * row + col;
                 if (index == gridButtons.length) {
                     done = true; break;
@@ -136,7 +134,7 @@ public class PIPCalcGUIView extends Application implements Observer{
 
     /**
      * Just stop
-     * @throws Exception
+     * @throws Exception General exception
      */
     @Override
     public void stop() throws Exception {
@@ -157,7 +155,7 @@ public class PIPCalcGUIView extends Application implements Observer{
      * @param s the string
      * @return true/false
      */
-    boolean isNumeric(String s) {
+    private boolean isNumeric(String s) {
         return s != null && s.matches("[-+]?\\d*\\.?\\d+");
     }
 
@@ -165,12 +163,18 @@ public class PIPCalcGUIView extends Application implements Observer{
      * handles all button actions
      * @param event event from button or radiobutton
      */
-    void handleButtonAction(ActionEvent event) {
+    private void handleButtonAction(ActionEvent event) {
         String input = ((Button)event.getSource()).getText();
-         if (input.equals("Enter")) {
-            controller.process(display.getText());
+         if (input.equals("ENTER")) {
+             String exp = (display.getText().contains("ANS")) ?
+                 display.getText().replaceAll("ANS", Integer.toString(lastAnswer)) : display.getText();
+             if (!exp.equals("")) {
+                 controller.process(exp);
+                 lastAnswer = Integer.parseInt(display.getText());
+             }
+            justSolved = true;
         }
-        else if (input.equals("Clear")){
+        else if (input.equals("CLEAR")) {
             display.setText("");
         }
         else if (input.equals("toInfix")) {
@@ -182,16 +186,40 @@ public class PIPCalcGUIView extends Application implements Observer{
         else if (input.equals("toPrefix")) {
             controller.convert(display.getText(), "prefix");
         }
-        else if (isNumeric(input) || input.equals("(") || input.equals(")")) {
+        else if (isNumeric(input)) {
+             if (justSolved) {
+                 display.setText("");
+                 display.setText(display.getText() + input);
+                 justSolved = false;
+             }
+             else {
+                 display.setText(display.getText() + input);
+             }
+         }
+        else if (input.equals("ANS") || input.equals("(") || input.equals(")")) {
             display.setText(display.getText() + input);
         }
+        else if (input.equals("DEL")) {
+             String lastChar = display.getText().length() == 0 ? "" : display.getText().substring(display.getText().length() - 1);
+             String s = lastChar.equals(" ") ? display.getText().substring(0, display.getText().length() - 3)
+                     : display.getText().substring(0, display.getText().length() - 1);
+             display.setText(s);
+         }
         else if (input.equals("(-)")) {
             display.setText(display.getText() + "-");
         }
-        else {//operators
-             // String lastChar = display.getText().substring(0, display.getText().length() - 1);
-            display.setText(display.getText() + input);
-        }
+        else {//operator work to prevent faulty input expressions
+             if (controller.getModel() instanceof PIPCalcInfixProcessor) {
+                 String lastChar = display.getText().length() == 0 ? "" : display.getText().substring(display.getText().length() - 1);
+                 if (!lastChar.equals("")) {
+                     String s = lastChar.equals(" ") ? display.getText().substring(0, display.getText().length() - 3)
+                             : display.getText();
+                     display.setText(s.trim() + " " + input + " ");
+                 }
+             }
+             else {
+                 display.setText(display.getText() + " " + input + " ");
+             }
+         }
     }
-
 }

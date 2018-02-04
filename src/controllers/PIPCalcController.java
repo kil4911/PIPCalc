@@ -1,6 +1,5 @@
 package controllers;
 
-import processors.PIPCalcInfixProcessor;
 import processors.PIPCalcProcessor;
 
 import java.util.ArrayList;
@@ -32,6 +31,10 @@ public class PIPCalcController {
         this.model = model;
     }
 
+    public PIPCalcProcessor getModel () {
+        return model;
+    }
+
     /**
      * Constructs and evaluates the provided string using the current model
      *
@@ -40,7 +43,7 @@ public class PIPCalcController {
      */
     public void process(String statement){
         ArrayList<String> tokens =
-                new ArrayList<String>(Arrays.asList(statement.split(" ")));
+                new ArrayList<>(Arrays.asList(statement.split(" ")));
         this.model.constructTree(tokens);
         this.model.evaluateTree();
     }
@@ -54,7 +57,7 @@ public class PIPCalcController {
      */
     public void convert(String statement, String mode){
         ArrayList<String> tokens =
-                new ArrayList<String>(Arrays.asList(statement.split(" ")));
+                new ArrayList<>(Arrays.asList(statement.split(" ")));
         this.model.constructTree(tokens);
         this.model.displayTree(mode);
     }
