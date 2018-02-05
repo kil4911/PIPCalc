@@ -20,7 +20,7 @@ import java.util.Observer;
  * Created by King David Lawrence on 01/20/2018.
  * The GUI for the calculator
  */
-public class PIPCalcGUIView extends Application implements Observer {
+public class PIPSolverGUI extends Application implements Observer {
     //the controller for the GUI
     private PIPCalcController controller;
     //the 3 different processors
