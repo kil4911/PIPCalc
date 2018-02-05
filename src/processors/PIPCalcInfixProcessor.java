@@ -67,6 +67,7 @@ public class PIPCalcInfixProcessor extends PIPCalcProcessor {
                 case BinaryOperation:
                     BinaryOperatorNode bin = (BinaryOperatorNode) n1;
                     bin.setRightChild(new_stack.pop());
+                    //if empty stack for next pop, syntax error
                     bin.setLeftChild(new_stack.pop());
                     new_stack.push(bin);
                     break;

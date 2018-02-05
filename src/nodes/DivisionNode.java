@@ -1,5 +1,7 @@
 package nodes;
 
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+
 /**
  * Created by King David Lawrence on 3/11/2017.
  * Division Node
@@ -30,9 +32,6 @@ public class DivisionNode extends BinaryOperatorNode{
      * @return the integer value of this node
      */
     public int evaluate() {
-        /**if (rightChild.evaluate() == 0) {
-            Errors.error("can't divide by 0", this);
-        }*/
         return leftChild.evaluate() / rightChild.evaluate();
     }
 

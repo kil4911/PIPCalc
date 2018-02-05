@@ -5,6 +5,10 @@ import processors.PIPCalcProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Created by King David Lawrence on 01/20/2018.
+ * The controller for the text and UI App
+ */
 public class PIPCalcController {
 
     //the model for the controller; can be infix, prefix or postfix processors
@@ -18,7 +22,6 @@ public class PIPCalcController {
      *
      * @param model the initial model for this controllers
      */
-
     public PIPCalcController(PIPCalcProcessor model){
         this.model = model;
     }
@@ -31,9 +34,11 @@ public class PIPCalcController {
         this.model = model;
     }
 
-    public PIPCalcProcessor getModel () {
-        return model;
-    }
+    /**
+     * getter for model field
+     * @return current model
+     */
+    public PIPCalcProcessor getModel () { return model; }
 
     /**
      * Constructs and evaluates the provided string using the current model
@@ -50,8 +55,6 @@ public class PIPCalcController {
 
     /**
      * Converts the provided expression into the requested form.
-     *
-     * Note: It does not return the converted expression. The model should update the views.
      * @param statement the string representing the expression to convert
      * @param mode the mode to convert the expression into
      */

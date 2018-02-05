@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 
+import java.util.EmptyStackException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -28,6 +29,8 @@ public class PIPCalcGUIView extends Application implements Observer {
     private PIPCalcPostfixProcessor processor3;
     //boolean determines if some calculation was done just previously
     private boolean justSolved = false;
+    //expression that was just solved
+    private String lastUserInput = "";
     //stores the most recent answer
     private int lastAnswer = 0;
 
@@ -59,13 +62,13 @@ public class PIPCalcGUIView extends Application implements Observer {
         final ToggleGroup toggleGroup = new ToggleGroup();
 
         RadioButton[] calcModeButtons = new RadioButton[3];
-        Button[] regularButtons = new Button[30];
+        Button[] regularButtons = new Button[31];
         Button[] convertDisplayButtons = new Button[3];
 
         String[] names1 = {"infix", "prefix", "postfix"};
         String[] names2 = {"1", "2", "3",  "+", "4", "5", "6", "-", "7", "8", "9",
                 "*", "ANS", "0", "DEL", "//", "<", "<=", "!=", "^", ">", ">=", "==",
-                "(-)", "@", "|", "(", ")", "ENTER", "CLEAR", };
+                "(-)", "@", "|", "(", ")", "ENTER", "CLEAR", "PREV"};
         String[] names3 = {"toInfix", "toPrefix", "toPostfix"};
 
         for (int i = 0; i < calcModeButtons.length; i++) {
@@ -77,6 +80,7 @@ public class PIPCalcGUIView extends Application implements Observer {
 
         toggleGroup.selectedToggleProperty().addListener((ov, old_toggle, new_toggle) -> {
             String name = new_toggle.getToggleGroup().getSelectedToggle().getUserData().toString();
+            System.out.println(name);
             switch (name) {
                 case "infix":
                     controller.changeModel(processor1);
@@ -166,16 +170,29 @@ public class PIPCalcGUIView extends Application implements Observer {
     private void handleButtonAction(ActionEvent event) {
         String input = ((Button)event.getSource()).getText();
          if (input.equals("ENTER")) {
+             lastUserInput = display.getText();
              String exp = (display.getText().contains("ANS")) ?
                  display.getText().replaceAll("ANS", Integer.toString(lastAnswer)) : display.getText();
              if (!exp.equals("")) {
-                 controller.process(exp);
-                 lastAnswer = Integer.parseInt(display.getText());
+                 try {
+                     controller.process(exp);
+                     lastAnswer = Integer.parseInt(display.getText());
+                 }
+                 catch (ArithmeticException ae) {
+                     display.setText("Math Error");
+                 }
+                 catch (EmptyStackException es) {
+                     display.setText("Syntax Error");
+                 }
+
              }
             justSolved = true;
         }
         else if (input.equals("CLEAR")) {
             display.setText("");
+        }
+        else if (input.equals("PREV")) {
+             display.setText(lastUserInput);
         }
         else if (input.equals("toInfix")) {
             controller.convert(display.getText(), "infix");
@@ -187,30 +204,55 @@ public class PIPCalcGUIView extends Application implements Observer {
             controller.convert(display.getText(), "prefix");
         }
         else if (isNumeric(input)) {
-             if (justSolved) {
+             if (justSolved && isNumeric(display.getText())) {
                  display.setText("");
                  display.setText(display.getText() + input);
                  justSolved = false;
+             }
+             else if(display.getText().length() > 0 && display.getText().substring(display.getText().length() - 1).equals("S")) {
+                 //do nothing, wait for operator
              }
              else {
                  display.setText(display.getText() + input);
              }
          }
-        else if (input.equals("ANS") || input.equals("(") || input.equals(")")) {
+        else if (input.equals("ANS")) {
+             String lastChar = display.getText().length() == 0 ? ""
+                     : display.getText().substring(display.getText().length() - 1);
+             String s;
+             if (isNumeric(lastChar) || lastChar.equals("S")) {
+                 //do nothing, wait for operator
+             }
+             else {//lastChar is an operator or ""
+                 s = display.getText();
+                 display.setText(s + input);
+             }
+         }
+         else if (input.equals("(") || input.equals(")")) {
             display.setText(display.getText() + input);
         }
         else if (input.equals("DEL")) {
-             String lastChar = display.getText().length() == 0 ? "" : display.getText().substring(display.getText().length() - 1);
-             String s = lastChar.equals(" ") ? display.getText().substring(0, display.getText().length() - 3)
-                     : display.getText().substring(0, display.getText().length() - 1);
-             display.setText(s);
+             if (!display.getText().equals("")) {
+                 String s;
+                 if (display.getText().length() > 2 &&
+                         display.getText().substring(display.getText().length()-3).equals("ANS")) {
+                     s = display.getText().substring(0, display.getText().length() - 3);
+                 }
+                 else {
+                     String lastChar = display.getText().substring(display.getText().length() - 1);
+                     s = lastChar.equals(" ") ? display.getText().substring(0, display.getText().length() - 3)
+                             : display.getText().substring(0, display.getText().length() - 1);
+                 }
+                 display.setText(s);
+             }
          }
         else if (input.equals("(-)")) {
             display.setText(display.getText() + "-");
         }
-        else {//operator work to prevent faulty input expressions
+        else {//operator work to prevent input expressions with wrong syntax
              if (controller.getModel() instanceof PIPCalcInfixProcessor) {
-                 String lastChar = display.getText().length() == 0 ? "" : display.getText().substring(display.getText().length() - 1);
+                 String lastChar = display.getText().length() == 0 ? ""
+                         : display.getText().substring(display.getText().length() - 1);
                  if (!lastChar.equals("")) {
                      String s = lastChar.equals(" ") ? display.getText().substring(0, display.getText().length() - 3)
                              : display.getText();
