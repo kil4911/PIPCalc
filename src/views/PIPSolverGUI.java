@@ -1,18 +1,22 @@
 package views;
 
+import CustomExceptions.MismatchedBracketsException;
 import controllers.PIPCalcController;
+import javafx.geometry.Insets;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import processors.*;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 
-import java.util.EmptyStackException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -33,9 +37,21 @@ public class PIPSolverGUI extends Application implements Observer {
     private String lastUserInput = "";
     //stores the most recent answer
     private int lastAnswer = 0;
-
     //calculator's display
     private TextField display;
+    /*Styles*/
+    private static final int sceneWidth = 330;
+    private static final int sceneHeight = 365;
+    private static final int convertBtnsWidth = 95;
+    private static final int convertBtnsHeight = 24;
+    private static final int displayHeight = 60;
+    private static final int regBtnsHeight = 35;
+    private static final int regBtnsWidth = 50;
+    private static final int gridVgap = 10;
+    private static final int gridHgap = 10;
+    private static final int ctrlBtnsWidth = 95;
+    private static final int ctrlBtnsHeight = 38;
+
 
     /**
      * initialize view, defaults processor to infix processor
@@ -50,7 +66,9 @@ public class PIPSolverGUI extends Application implements Observer {
         processor3.addObserver(this);
         this.controller = new PIPCalcController(processor1);
         display = new TextField();
+        display.setPrefHeight(displayHeight);
         display.setEditable(false);
+        display.setFont(Font.font("Trebuchet MS", FontWeight.BOLD, 20));
     }
 
     /**
@@ -62,14 +80,20 @@ public class PIPSolverGUI extends Application implements Observer {
         final ToggleGroup toggleGroup = new ToggleGroup();
 
         RadioButton[] calcModeButtons = new RadioButton[3];
-        Button[] regularButtons = new Button[31];
-        Button[] convertDisplayButtons = new Button[3];
+        Button[] regularButtons = new Button[28];
+        Button[] convertButtons = new Button[3];
+        Button[] controlButtons = new Button[3];
 
         String[] names1 = {"infix", "prefix", "postfix"};
         String[] names2 = {"1", "2", "3",  "+", "4", "5", "6", "-", "7", "8", "9",
-                "*", "ANS", "0", "DEL", "//", "<", "<=", "!=", "^", ">", ">=", "==",
-                "(-)", "@", "|", "(", ")", "ENTER", "CLEAR", "PREV"};
+                "*", "ANS", "0", "DEL", "//", "space",  "<", "<=", "^", "!=", ">", ">=", "@", "==", "(", ")", "(-)"};
+        //Brackets at position length - 1, length - 2
         String[] names3 = {"toInfix", "toPrefix", "toPostfix"};
+        String[] names4 = {"=", "CLEAR", "HISTORY"};
+
+        makeButtons(regularButtons, names2, regBtnsWidth, regBtnsHeight);
+        makeButtons(convertButtons, names3, convertBtnsWidth, convertBtnsHeight);
+        makeButtons(controlButtons, names4, ctrlBtnsWidth, ctrlBtnsHeight);
 
         for (int i = 0; i < calcModeButtons.length; i++) {
             calcModeButtons[i] = new RadioButton(names1[i]);
@@ -84,56 +108,53 @@ public class PIPSolverGUI extends Application implements Observer {
             switch (name) {
                 case "infix":
                     controller.changeModel(processor1);
+                    regularButtons[regularButtons.length - 1].setDisable(false);
+                    regularButtons[regularButtons.length - 2].setDisable(false);
                     break;
                 case "prefix":
                     controller.changeModel(processor2);
+                    regularButtons[regularButtons.length - 1].setDisable(true);
+                    regularButtons[regularButtons.length - 2].setDisable(true);
                     break;
                 case "postfix":
                     controller.changeModel(processor3);
+                    regularButtons[regularButtons.length - 1].setDisable(true);
+                    regularButtons[regularButtons.length - 2].setDisable(true);
                     break;
             }
         });
 
-        for (int i = 0; i < regularButtons.length; i++) {
-            regularButtons[i] = new Button(names2[i]);
-            regularButtons[i].setOnAction(this::handleButtonAction);
-        }
+        //GUI
 
-        for (int i = 0; i < convertDisplayButtons.length; i++) {
-            convertDisplayButtons[i] = new Button(names3[i]);
-            convertDisplayButtons[i].setOnAction(e -> handleButtonAction(e));
-        }
+        BorderPane borderPane = new BorderPane();
 
-        BorderPane b = new BorderPane();
 
-        VBox v1 = new VBox(new Label("Mode:"), calcModeButtons[0], calcModeButtons[1], calcModeButtons[2],
-                new Label("Convert:"), convertDisplayButtons[0], convertDisplayButtons[1], convertDisplayButtons[2]);
-        b.setTop(display); b.setLeft(makeGrid(regularButtons)); b.setRight(v1);
-        primaryStage.setTitle("PIPCalc");
-        primaryStage.setScene(new Scene(b, 300, 300));
+        VBox modeBox = new VBox(new Label("Mode:"), calcModeButtons[0], calcModeButtons[1], calcModeButtons[2]);
+
+        VBox convertBox = new VBox(convertButtons[0], convertButtons[1],
+                convertButtons[2]);
+        convertBox.setSpacing(3);
+
+        VBox controlsBox = new VBox(controlButtons[0], controlButtons[1], controlButtons[2]);
+        controlsBox.setPadding(new Insets(2, 0, 0, 0));
+        controlsBox.setSpacing(3);
+
+        VBox rightBox = new VBox(modeBox, controlsBox, new Label("Convert:"), convertBox);
+        rightBox.setPadding(new Insets(0, 0, 0, 5));
+
+        HBox centreBox = new HBox(makeGrid(regularButtons), rightBox);
+        centreBox.setPadding(new Insets(5, 0, 0, 5));
+
+        borderPane.setTop(display); borderPane.setLeft(centreBox);
+        borderPane.getStyleClass().add("borderPane"); //Invoke CSS
+
+        Scene scene = new Scene(borderPane, sceneWidth, sceneHeight);
+        scene.getStylesheets().add("css/PIPStyles.css"); //make styles accessible to all nodes
+
+        primaryStage.setTitle("PIPSolver");
+        primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
-    }
-
-
-    /**
-     * calc grid
-     * @return grid pane
-     */
-    private GridPane makeGrid(Button[] gridButtons){
-        GridPane root = new GridPane();
-        root.setAlignment(Pos.CENTER);
-        int index ; boolean done = false;
-        for (int row = 0; row < 8 && !done; row++) {
-            for (int col = 0; col < 4; col++) {
-                index = 4 * row + col;
-                if (index == gridButtons.length) {
-                    done = true; break;
-                }
-                root.add(gridButtons[index], col, row);
-            }
-        }
-        return root;
     }
 
     /**
@@ -141,9 +162,7 @@ public class PIPSolverGUI extends Application implements Observer {
      * @throws Exception General exception
      */
     @Override
-    public void stop() throws Exception {
-        super.stop();
-    }
+    public void stop() throws Exception { super.stop(); }
 
     /**
      * Updates the view
@@ -152,6 +171,81 @@ public class PIPSolverGUI extends Application implements Observer {
      */
     public void update(Observable o, Object arg) {
         display.setText((String) arg);
+    }
+
+    /**
+     * calc grid
+     * @return grid pane
+     */
+    private GridPane makeGrid(Button[] gridButtons){
+        GridPane grid = new GridPane();
+        int index ; boolean done = false;
+        grid.setVgap(gridVgap);
+        grid.setHgap(gridHgap);
+        for (int row = 0; row < 7 && !done; row++) {
+            for (int col = 0; col < 4; col++) {
+                index = 4 * row + col;
+                if (index == gridButtons.length) {
+                    done = true; break;
+                }
+                grid.add(gridButtons[index], col, row);
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Make & Styles buttons for a particular section of the app
+     * @param buttons the array of buttons to make
+     * @param names the names of the buttons
+     * @param btnWidth the width of each button
+     * @param btnHeight the height of each button
+     */
+    private void makeButtons (Button[] buttons, String[] names, int btnWidth, int btnHeight) {
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i] = new Button(names[i]);
+            buttons[i].setPrefWidth(btnWidth);
+            buttons[i].setPrefHeight(btnHeight);
+            buttons[i].setOnAction(this::handleButtonAction);
+            buttons[i].getStyleClass().add("buttons");
+            String name = buttons[i].getText();
+            if (name.equals("=")) {
+                buttons[i].setFont(Font.font("Verdana", FontWeight.BLACK, 18));
+                buttons[i].getStyleClass().add("enterButton");
+            }
+            else if (name.equals("CLEAR") || name.equals("HISTORY")) {
+                buttons[i].setFont(Font.font("Verdana", FontWeight.BLACK, 14));
+                buttons[i].getStyleClass().add("regularButtons");
+            }
+            else if (name.equals("toInfix") || name.equals("toPrefix") || name.equals("toPostfix")) {
+                buttons[i].setFont(Font.font("Verdana", FontWeight.BLACK,12));
+                buttons[i].getStyleClass().add("regularButtons");
+            }
+            else if (name.equals("ANS") || name.equals("DEL")) {
+                buttons[i].setFont(Font.font("Verdana", FontWeight.BOLD,13));
+                buttons[i].getStyleClass().add("regularButtons");
+            }
+            else if(isNumeric(name)) {
+                buttons[i].setFont(Font.font("Verdana", 18));
+            }
+            else if(name.equals("space")) {
+                buttons[i].setText("");
+                buttons[i].getStyleClass().add("regularButtons");
+                final int x = i;
+                buttons[i].setFont(Font.font("Verdana", FontWeight.BOLD, 10));
+                buttons[i].hoverProperty().addListener((ov, oldValue, newValue) -> {
+                    if (newValue) {
+                        buttons[x].setText("space");
+                    } else {
+                        buttons[x].setText("");
+                    }
+                });
+            }
+            else {
+                buttons[i].setFont(Font.font("Verdana", 15));
+                buttons[i].getStyleClass().add("regularButtons");
+            }
+        }
     }
 
     /**
@@ -167,9 +261,9 @@ public class PIPSolverGUI extends Application implements Observer {
      * handles all button actions
      * @param event event from button or radiobutton
      */
-    private void handleButtonAction(ActionEvent event) {
+    private void handleButtonAction(ActionEvent event){
         String input = ((Button)event.getSource()).getText();
-         if (input.equals("ENTER")) {
+         if (input.equals("=")) {
              lastUserInput = display.getText();
              String exp = (display.getText().contains("ANS")) ?
                  display.getText().replaceAll("ANS", Integer.toString(lastAnswer)) : display.getText();
@@ -181,33 +275,63 @@ public class PIPSolverGUI extends Application implements Observer {
                  catch (ArithmeticException ae) {
                      display.setText("Math Error");
                  }
-                 catch (EmptyStackException es) {
-                     display.setText("Syntax Error");
+                 catch (MismatchedBracketsException mbs) {
+                     display.setText(mbs.getMessage());
                  }
-
              }
             justSolved = true;
         }
+        else if(input.equals("(-)")) {
+
+             String lastChar = display.getText().length() == 0 ? ""
+                     : display.getText().substring(display.getText().length() - 1);
+             if (lastChar.equals("") || lastChar.equals(" ")) {
+                 display.setText(display.getText() + "-");
+             }
+             else if (lastChar.equals("-") || lastChar.equals(")") || isNumeric(lastChar)) {
+                 display.setText(display.getText());
+             }
+         }
         else if (input.equals("CLEAR")) {
             display.setText("");
         }
-        else if (input.equals("PREV")) {
+         else if (input.equals("space")) {
+             display.setText(display.getText() + " ");
+         }
+        else if (input.equals("HISTORY")) {
              display.setText(lastUserInput);
         }
         else if (input.equals("toInfix")) {
-            controller.convert(display.getText(), "infix");
-        }
+             try {
+                 controller.convert(display.getText(), "infix");
+             } catch (MismatchedBracketsException mbs) {
+                 display.setText(mbs.getMessage());
+             }
+         }
         else if (input.equals("toPostfix")) {
-            controller.convert(display.getText(), "postfix");
-        }
+             try {
+                 controller.convert(display.getText(), "postfix");
+             } catch (MismatchedBracketsException mbs) {
+                 display.setText(mbs.getMessage());
+             }
+         }
         else if (input.equals("toPrefix")) {
-            controller.convert(display.getText(), "prefix");
-        }
+             try {
+                 controller.convert(display.getText(), "prefix");
+             } catch (MismatchedBracketsException mbs) {
+                 display.setText(mbs.getMessage());
+             }
+         }
         else if (isNumeric(input)) {
+             String lastChar = display.getText().length() == 0 ? ""
+                     : display.getText().substring(display.getText().length() - 1);
              if (justSolved && isNumeric(display.getText())) {
                  display.setText("");
                  display.setText(display.getText() + input);
                  justSolved = false;
+             }
+             else if (lastChar.equals(")")) {
+                 display.setText(display.getText() + " * " + input);
              }
              else if(display.getText().length() > 0 && display.getText().substring(display.getText().length() - 1).equals("S")) {
                  //do nothing, wait for operator
@@ -228,9 +352,22 @@ public class PIPSolverGUI extends Application implements Observer {
                  display.setText(s + input);
              }
          }
-         else if (input.equals("(") || input.equals(")")) {
-            display.setText(display.getText() + input);
+         else if (input.equals("(")) {
+             if (display.getText().equals("")) {
+                 display.setText(display.getText() + input + " ");
+             }
+             else {
+                 String lastChar = display.getText().substring(display.getText().length() - 1);
+                 if (isNumeric(lastChar))
+                     display.setText(display.getText() + " * " + input + " ");
+                 else
+                     display.setText(display.getText() + " " + input + " ");
+             }
+
         }
+        else if( input.equals(")")) {
+             display.setText(display.getText() + " " + input);
+         }
         else if (input.equals("DEL")) {
              if (!display.getText().equals("")) {
                  String s;
@@ -246,10 +383,7 @@ public class PIPSolverGUI extends Application implements Observer {
                  display.setText(s);
              }
          }
-        else if (input.equals("(-)")) {
-            display.setText(display.getText() + "-");
-        }
-        else {//operator work to prevent input expressions with wrong syntax
+        else {//Operators: prevent input expressions with wrong syntax
              if (controller.getModel() instanceof PIPCalcInfixProcessor) {
                  String lastChar = display.getText().length() == 0 ? ""
                          : display.getText().substring(display.getText().length() - 1);

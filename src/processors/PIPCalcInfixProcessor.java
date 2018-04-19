@@ -1,5 +1,6 @@
 package processors;
 
+import CustomExceptions.MismatchedBracketsException;
 import nodes.*;
 
 import java.util.LinkedList;
@@ -19,36 +20,58 @@ public class PIPCalcInfixProcessor extends PIPCalcProcessor {
      * list of PIPCalcNode tokens using infix notation
      * @param tokens list of PIPCalcNodes used to create the parse tree
      */
-    public void constructTree(java.util.ArrayList<String> tokens) {
+    public void constructTree(java.util.ArrayList<String> tokens) throws MismatchedBracketsException {
         Stack<PIPCalcNode> oper_st = new Stack<>();
+        Stack<String> bracket_st = new Stack<>();
         Queue<PIPCalcNode> output_queue = new LinkedList<>();
+
+        if (tokens.size() == 1 && tokens.get(0).equals("")) {
+            tree = null;
+            return;
+        }
 
         int count = 0;
         while (count < tokens.size()) {
-            String token = tokens.get(count);
+            String token = tokens.get(count++);
 
-            if (token.equals(")") || token.equals("(")) continue;
-
-            PIPCalcNode node = createPIPCalcNode(token);
-
-            if (node.getNodeType() == PIPCalcNode.NodeType.Constant) {
-                output_queue.add(node);
+            if (token.equals("(")) {
+                bracket_st.push("(");
             }
-            if (node.getNodeType() == PIPCalcNode.NodeType.BinaryOperation || node.getNodeType() == PIPCalcNode.NodeType.UnaryOperation) {
-
-                while (!oper_st.empty() && (oper_st.peek().getPrecedence() < node.getPrecedence()
-                        || (oper_st.peek().getPrecedence() == node.getPrecedence() && (!(node instanceof PowerNode))))) {
+            else if (token.equals(")")) {
+                while (!bracket_st.isEmpty() && !bracket_st.peek().equals("(")) {
+                    bracket_st.pop();
                     output_queue.add(oper_st.pop());
                 }
-                oper_st.push(node);
+                if (bracket_st.isEmpty())
+                    throw new MismatchedBracketsException();
+                else if (bracket_st.peek().equals("("))
+                    bracket_st.pop();
+                else
+                    throw new MismatchedBracketsException();
             }
-            count++;
+            else {
+                PIPCalcNode node = createPIPCalcNode(token);
+                if (node.getNodeType() == PIPCalcNode.NodeType.Constant) {
+                    output_queue.add(node);
+                }
+                if ( node.getNodeType() == PIPCalcNode.NodeType.UnaryOperation ||
+                        node.getNodeType() == PIPCalcNode.NodeType.BinaryOperation) {
+                    while (!oper_st.empty() && !bracket_st.peek().equals("(") && (oper_st.peek().getPrecedence() < node.getPrecedence()
+                            || (oper_st.peek().getPrecedence() == node.getPrecedence() && (!(node instanceof PowerNode))))) {
+                        output_queue.add(oper_st.pop());
+                    }
+                    oper_st.push(node);
+                    bracket_st.push(" ");
+                }
+            }
         }
+
         if (count == tokens.size()) {
-            while(!oper_st.empty() && (oper_st.peek().getNodeType() == PIPCalcNode.NodeType.BinaryOperation
-                    || oper_st.peek().getNodeType() == PIPCalcNode.NodeType.UnaryOperation)) {
+            if (!bracket_st.isEmpty() && (bracket_st.peek().equals("(") || bracket_st.peek().equals(")")))
+                throw new MismatchedBracketsException();
+            while(!oper_st.empty())
                 output_queue.add(oper_st.pop());
-            }
+
         }
         //Parse Postfix to tree
         Stack<PIPCalcNode> new_stack = new Stack<>();
