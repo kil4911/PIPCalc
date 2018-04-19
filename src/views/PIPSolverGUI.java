@@ -1,12 +1,10 @@
 package views;
 
-import CustomExceptions.MismatchedBracketsException;
+import Util.customExceptions.MismatchedBracketsException;
 import controllers.PIPCalcController;
 import javafx.geometry.Insets;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import processors.*;
 
 import javafx.application.Application;
@@ -149,7 +147,7 @@ public class PIPSolverGUI extends Application implements Observer {
         borderPane.getStyleClass().add("borderPane"); //Invoke CSS
 
         Scene scene = new Scene(borderPane, sceneWidth, sceneHeight);
-        scene.getStylesheets().add("css/PIPStyles.css"); //make styles accessible to all nodes
+        scene.getStylesheets().add("Util/css/PIPStyles.css"); //make styles accessible to all nodes
 
         primaryStage.setTitle("PIPSolver");
         primaryStage.setScene(scene);

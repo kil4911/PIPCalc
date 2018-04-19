@@ -1,4 +1,4 @@
-package CustomExceptions;
+package Util.customExceptions;
 
 public class MismatchedBracketsException extends Exception{
     public MismatchedBracketsException() {

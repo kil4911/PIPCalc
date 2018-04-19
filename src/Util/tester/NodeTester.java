@@ -1,4 +1,4 @@
-package tester;
+package Util.tester;
 
 import nodes.*;
 
@@ -433,7 +433,7 @@ public class NodeTester {
 
         // test unary in binary
         //right = new AbsValueNode(new ConstantNode(-5));
-        //tester.testBinaryNodes(left, right);
+        //Util.tester.testBinaryNodes(left, right);
 
         tester.testBinaryNodes(right, left);
 
