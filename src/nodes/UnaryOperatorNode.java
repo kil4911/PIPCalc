@@ -43,7 +43,7 @@ public abstract class UnaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as prefix notation
      */
     public String toPrefixString() {
-        return ""+ operator + " " + child.toPrefixString();
+        return "( " + operator + " " + child.toPrefixString() + " )";
     }
 
     /**
@@ -51,7 +51,7 @@ public abstract class UnaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as infix notation
      */
     public String toInfixString() {
-        return "("+ operator + " " + child.toInfixString() + ")";
+        return "( "+ operator + " " + child.toInfixString() + " )";
     }
 
     /**
@@ -59,7 +59,7 @@ public abstract class UnaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as postfix notation
      */
     public String toPostfixString() {
-        return ""+child.toPostfixString() + " " + operator;
+        return "( " + child.toPostfixString() + " " + operator + " )";
     }
 
     /**

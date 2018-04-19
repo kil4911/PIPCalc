@@ -1,5 +1,6 @@
 package controllers;
 
+import CustomExceptions.MismatchedBracketsException;
 import processors.PIPCalcProcessor;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class PIPCalcController {
      * Note: It does not return the result. The model should update the views.
      * @param statement the string representing an expression to process
      */
-    public void process(String statement){
+    public void process(String statement) throws MismatchedBracketsException{
         ArrayList<String> tokens =
                 new ArrayList<>(Arrays.asList(statement.split(" ")));
         this.model.constructTree(tokens);
@@ -58,7 +59,7 @@ public class PIPCalcController {
      * @param statement the string representing the expression to convert
      * @param mode the mode to convert the expression into
      */
-    public void convert(String statement, String mode){
+    public void convert(String statement, String mode) throws MismatchedBracketsException{
         ArrayList<String> tokens =
                 new ArrayList<>(Arrays.asList(statement.split(" ")));
         this.model.constructTree(tokens);

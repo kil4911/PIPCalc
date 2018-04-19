@@ -316,12 +316,6 @@ public class NodeTester {
         try {
             int leftValue = left.evaluate();
             TestUnaryParams[] tests = new TestUnaryParams[]{
-                    new TestUnaryParams(AbsValueNode.class,
-                            left, Math.abs(leftValue),
-                            "|", displaySuccess),
-                    new TestUnaryParams(NegationNode.class,
-                            left, -1 * leftValue,
-                            "_", displaySuccess),
                     new TestUnaryParams(SquareRootNode.class,
                             left, (int) Math.sqrt(leftValue),
                             "@", displaySuccess)
@@ -438,8 +432,8 @@ public class NodeTester {
         tester.testUnaryNodes(left);
 
         // test unary in binary
-        right = new AbsValueNode(new ConstantNode(-5));
-        tester.testBinaryNodes(left, right);
+        //right = new AbsValueNode(new ConstantNode(-5));
+        //tester.testBinaryNodes(left, right);
 
         tester.testBinaryNodes(right, left);
 

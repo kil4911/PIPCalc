@@ -56,7 +56,7 @@ public abstract class BinaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as prefix notation
      */
     public String toPrefixString() {
-        return operator + " " + leftChild.toPrefixString() + " " + rightChild.toPrefixString();
+        return "( " + operator + " " + leftChild.toPrefixString() + " " + rightChild.toPrefixString() + " )";
     }
 
     /**
@@ -64,7 +64,7 @@ public abstract class BinaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as infix notation
      */
     public String toInfixString() {
-        return "(" + leftChild.toInfixString() + " " + operator + " " + rightChild.toInfixString()+ ")";
+        return "( " + leftChild.toInfixString() + " " + operator + " " + rightChild.toInfixString()+ " )";
     }
 
     /**
@@ -72,7 +72,7 @@ public abstract class BinaryOperatorNode implements PIPCalcNode{
      * @return string representing the node as postfix notation
      */
     public String toPostfixString() {
-        return leftChild.toPostfixString() + " " + rightChild.toPostfixString() + " " + operator;
+        return "( " + leftChild.toPostfixString() + " " + rightChild.toPostfixString() + " " + operator + " )";
     }
 
     /**
