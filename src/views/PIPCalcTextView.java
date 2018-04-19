@@ -1,5 +1,6 @@
 package views;
 
+import CustomExceptions.MismatchedBracketsException;
 import processors.PIPCalcInfixProcessor;
 import processors.PIPCalcPostfixProcessor;
 import processors.PIPCalcPrefixProcessor;
@@ -52,7 +53,11 @@ public class PIPCalcTextView implements Observer{
                     this.controller.changeModel(getTypeFromString(line));
                     break;
                 default:
-                    this.controller.process(line);
+                    try {
+                        this.controller.process(line);
+                    } catch (MismatchedBracketsException mbs) {
+                        System.out.println((mbs.getMessage()));
+                    }
             }
             System.out.print(PROMPT);
         }

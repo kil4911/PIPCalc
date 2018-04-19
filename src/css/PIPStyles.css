@@ -1,0 +1,12 @@
+.borderPane {
+    -fx-background-color: #e6f2ff;
+}
+.buttons:hover {
+    -fx-background-color: #99caff;
+}
+.regularButtons {
+    -fx-background-color: #D8D8D8;
+}
+.enterButton{
+    -fx-background-color: #A9A9A9;
+}
