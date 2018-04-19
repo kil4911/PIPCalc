@@ -19,6 +19,10 @@ public class PIPCalcPrefixProcessor extends PIPCalcProcessor {
      */
     public void constructTree(ArrayList<String> tokens) {
         Stack<PIPCalcNode> stack = new Stack<>();
+        if (tokens.size() == 1 && tokens.get(0).equals("")) {
+            tree = null;
+            return;
+        }
         int countDown = tokens.size()-1;
         while (countDown > -1 ) {
             PIPCalcNode n = createPIPCalcNode(tokens.get(countDown));

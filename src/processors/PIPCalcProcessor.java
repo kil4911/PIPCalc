@@ -1,5 +1,6 @@
 package processors;
 
+import CustomExceptions.MismatchedBracketsException;
 import nodes.*;
 
 import java.util.ArrayList;
@@ -49,10 +50,6 @@ public abstract class PIPCalcProcessor extends Observable{
                 return new MultiplicationNode(null, null);
             case "^":
                 return new PowerNode(null, null);
-            case "|":
-                return new AbsValueNode(null);
-            case "_":
-                return new NegationNode(null);
             case "@":
                 return new SquareRootNode(null);
             case ">":
@@ -84,7 +81,7 @@ public abstract class PIPCalcProcessor extends Observable{
      * Constructs a parse tree from a list of IerpNodes
      * @param tokens list of IerpNodes used to create the pares tree
      */
-    public abstract void constructTree( ArrayList<String> tokens );
+    public abstract void constructTree( ArrayList<String> tokens ) throws MismatchedBracketsException;
 
     /**
      * Displays tree, notifies observers that underlying tree changed
@@ -94,13 +91,13 @@ public abstract class PIPCalcProcessor extends Observable{
         String result = "";
         switch(mode){
             case "infix":
-                result = this.tree.toInfixString();
+                result = tree == null ? "" : this.tree.toInfixString();
                 break;
             case "prefix":
-                result = this.tree.toPrefixString();
+                result = tree == null ? "" : this.tree.toPrefixString();
                 break;
             case "postfix":
-                result = this.tree.toPostfixString();
+                result = tree == null ? "" : this.tree.toPostfixString();
                 break;
         }
         this.setChanged();
